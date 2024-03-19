@@ -1,0 +1,70 @@
+import pandas as pd
+
+# Data pelanggan
+data_pelanggan = {
+    'Customer ID': [1, 2, 3, 4, 5],
+    'City': ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix'],
+    'Region': ['East', 'West', 'Central', 'South', 'West']
+}
+
+# Data order
+data_order = {
+    'Order ID': [101, 102, 103, 104, 105],
+    'Customer ID': [1, 2, 3, 4, 5],
+    'Product Name': ['Product A', 'Product B', 'Product C', 'Product D', 'Product E'],
+    'Sales': [100, 200, 150, 300, 250],
+    'Order Date': ['2024-03-01', '2024-03-02', '2024-03-03', '2024-03-04', '2024-03-05'],
+    'Ship Date': ['2024-03-03', '2024-03-05', '2024-03-06', '2024-03-08', '2024-03-10']
+}
+
+# Membuat dataframe dari data pelanggan dan order
+df_pelanggan = pd.DataFrame(data_pelanggan)
+df_order = pd.DataFrame(data_order)
+
+# Merge data pelanggan dan order berdasarkan Customer ID
+df_merged = pd.merge(df_pelanggan, df_order, on='Customer ID')
+
+# Menghitung jumlah pelanggan di setiap Region
+customer_count = df_merged.groupby('Region')['Customer ID'].nunique()
+
+print("Jumlah Pelanggan Berdasarkan Region:")
+print(customer_count)
+
+# Menampilkan 10 kota dengan pelanggan terbanyak
+top_cities = df_merged['City'].value_counts().head(10)
+print("\n10 Kota dengan Pelanggan Terbanyak:")
+print(top_cities)
+
+# Menampilkan 10 pelanggan yang sering berbelanja
+top_customers = df_merged['Customer ID'].value_counts().head(10)
+print("\n10 Pelanggan yang Sering Berbelanja:")
+print(top_customers)
+
+# Menampilkan 10 nama produk yang sering dibeli
+top_products = df_merged['Product Name'].value_counts().head(10)
+print("\n10 Nama Produk yang Sering Dibeli:")
+print(top_products)
+
+# Menghitung durasi tanggal order-ship untuk setiap pelanggan
+df_merged['Order Date'] = pd.to_datetime(df_merged['Order Date'])
+df_merged['Ship Date'] = pd.to_datetime(df_merged['Ship Date'])
+df_merged['Duration'] = df_merged['Ship Date'] - df_merged['Order Date']
+
+# Menampilkan 10 pelanggan dengan durasi tanggal order-ship tercepat
+fastest_shippers = df_merged.groupby('Customer ID')['Duration'].min().sort_values().head(10)
+print("\n10 Pelanggan dengan Durasi Tanggal Order-Ship Tercepat:")
+print(fastest_shippers)
+
+# Menampilkan 10 pelanggan dengan durasi tanggal order-ship terlama
+slowest_shippers = df_merged.groupby('Customer ID')['Duration'].max().sort_values(ascending=False).head(10)
+print("\n10 Pelanggan dengan Durasi Tanggal Order-Ship Terlama:")
+print(slowest_shippers)
+
+# Ubah angka pada kolom Sales sesuai dengan ketentuan diskon
+discount_mapping = {'South': 0.10, 'West': 0.15, 'Central': 0.13, 'East': 0.20}
+df_merged['Discount'] = df_merged['Region'].map(discount_mapping)
+df_merged['Discounted Sales'] = df_merged['Sales'] * (1 - df_merged['Discount'])
+
+# Tampilkan hasil setelah mengubah angka pada kolom Sales sesuai dengan diskon
+print("\nData Setelah Mengubah Angka pada Kolom Sales Sesuai dengan Diskon:")
+print(df_merged[['Customer ID', 'Sales', 'Region', 'Discount', 'Discounted Sales']])
